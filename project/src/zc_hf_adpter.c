@@ -470,9 +470,7 @@ void HF_GetMac(u8 *pu8Mac)
 *************************************************/
 void HF_Reboot(void)
 {
-#if 0
-    hfsys_reset();
-#endif
+    sys_reset();
 }
 /*************************************************
 * Function: HF_ConnectToCloud
@@ -757,7 +755,7 @@ void HF_WakeUp()
 void HF_Sleep()
 {
     u32 u32Index;
-    
+    ZC_Printf("HF_Sleep\r\n");
     close(g_Bcfd);
 
     if (PCT_INVAILD_SOCKET != g_struProtocolController.struClientConnection.u32Socket)

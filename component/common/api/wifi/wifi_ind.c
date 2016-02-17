@@ -185,6 +185,7 @@ void wifi_indication( WIFI_EVENT_INDICATE event, char *buf, int buf_len, int fla
 void wifi_reg_event_handler(unsigned int event_cmds, rtw_event_handler_t handler_func, void *handler_user_data)
 {
 	int i = 0, j = 0;
+    //printf("Enter wifi_reg_event_handler event_cmds is %d\n\r", event_cmds);
 	if(event_cmds < WIFI_EVENT_MAX){
 		for(i=0; i < WIFI_EVENT_MAX_ROW; i++){
 			if(event_callback_list[event_cmds][i].handler == NULL){

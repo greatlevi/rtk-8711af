@@ -259,6 +259,8 @@ static void wifi_handshake_done_hdl( char* buf, int buf_len, int flags, void* us
 	if(join_user_data != NULL)
 		rtw_up_sema(&join_user_data->join_sema);
 }
+extern void HF_Sleep();
+extern void HF_BcInit();
 
 static void wifi_disconn_hdl( char* buf, int buf_len, int flags, void* userdata)
 {
@@ -296,6 +298,9 @@ static void wifi_disconn_hdl( char* buf, int buf_len, int flags, void* userdata)
 	if(join_user_data != NULL)
 		rtw_up_sema(&join_user_data->join_sema);
 	//printf("\r\nWiFi Disconnect. Error flag is %d.\n", error_flag);
+
+    HF_Sleep();
+    HF_BcInit();
 }
 
 #if CONFIG_EXAMPLE_WLAN_FAST_CONNECT || CONFIG_JD_SMART
@@ -1561,12 +1566,14 @@ void wifi_autoreconnect_hdl(rtw_security_t security_type,
 
 int wifi_config_autoreconnect(__u8 mode, __u8 retyr_times, __u16 timeout)
 {
+    printf("wifi_config_autoreconnect\n\r");
     p_wlan_autoreconnect_hdl = wifi_autoreconnect_hdl;
     return wext_set_autoreconnect(WLAN0_NAME, mode, retyr_times, timeout);
 }
 
 int wifi_set_autoreconnect(__u8 mode)
 {
+    printf("wifi_set_autoreconnect\n\r");
 	p_wlan_autoreconnect_hdl = wifi_autoreconnect_hdl;
 	return wifi_config_autoreconnect(mode, 3, 5);//default retry 2 times(limit is 3), timeout 5 seconds
 }
