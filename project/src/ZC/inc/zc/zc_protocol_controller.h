@@ -92,9 +92,7 @@ typedef u32 (*pFunFirmwareUpdateFinish)(u32 u32TotalLen);
 typedef u32 (*pFunSendDataToMoudle)(u8 *pu8Data, u16 u16DataLen);
 typedef u32 (*pFunRecvDataFromMoudle)(u8 *pu8Data, u16 u16DataLen);
 typedef void (*pFunWriteFlashData)(u8 *pu8Data, u16 u16DataLen);
-typedef void (*pFunReadFlashData)(u8 *pu8Data, u16 u16DataLen);
-
-
+typedef void (*pFunReadFlashData)(void);
 typedef u32 (*pFunConnectToCloud)(PTC_Connection *pstruConnection);
 typedef u32 (*pFunListenClient)(PTC_Connection *pstruConnection);
 typedef u32 (*pFunSetTimer)(u8 u8Type, u32 Interval, u8 *pu8Index);

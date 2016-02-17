@@ -3134,6 +3134,9 @@
       </file>
       <file>
         <name>$PROJ_DIR$\..\..\..\component\common\network\ssl\polarssl-1.3.8\library\bignum.c</name>
+        <excluded>
+          <configuration>Debug</configuration>
+        </excluded>
       </file>
       <file>
         <name>$PROJ_DIR$\..\..\..\component\common\network\ssl\polarssl-1.3.8\library\blowfish.c</name>
@@ -3257,6 +3260,9 @@
       </file>
       <file>
         <name>$PROJ_DIR$\..\..\..\component\common\network\ssl\polarssl-1.3.8\library\rsa.c</name>
+        <excluded>
+          <configuration>Debug</configuration>
+        </excluded>
       </file>
       <file>
         <name>$PROJ_DIR$\..\..\..\component\common\network\ssl\polarssl-1.3.8\library\sha1.c</name>
@@ -3415,6 +3421,12 @@
         </group>
         <group>
           <name>tropicssl</name>
+          <file>
+            <name>$PROJ_DIR$\..\..\src\ZC\src\tropicssl\bignum.c</name>
+          </file>
+          <file>
+            <name>$PROJ_DIR$\..\..\src\ZC\src\tropicssl\rsa.c</name>
+          </file>
         </group>
         <group>
           <name>zc</name>

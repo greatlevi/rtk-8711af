@@ -198,22 +198,18 @@ void PCT_SendCloudAccessMsg1(PTC_ProtocolCon *pstruContoller)
         TIMER_StopTimer(pstruContoller->u8ReconnectTimer);
         pstruContoller->u8ReconnectTimer = PCT_TIMER_INVAILD;
     }
-    
+
     ZC_GetStoreInfor(ZC_GET_TYPE_DEVICEID, &pu8DeviceId);
-    
     memcpy(struMsg1.RandMsg, pstruContoller->RandMsg, ZC_HS_MSG_LEN);
     memcpy(struMsg1.DeviceId, pu8DeviceId, ZC_HS_DEVICE_ID_LEN);
     memcpy(struMsg1.u8Domain, pu8DeviceId + ZC_HS_DEVICE_ID_LEN, ZC_DOMAIN_LEN);
-
    
     EVENT_BuildMsg(ZC_CODE_HANDSHAKE_1, 1, g_u8MsgBuildBuffer, &u16Len, 
         (u8*)&struMsg1, sizeof(ZC_HandShakeMsg1));
-    
     struSechead.u8SecType = ZC_SEC_ALG_RSA;
     struSechead.u16TotalMsg = ZC_HTONS(u16Len);
     struSechead.u8Resver = 0x5A;
     u32RetVal = PCT_SendMsgToCloud(&struSechead, g_u8MsgBuildBuffer);
-    
     if (ZC_RET_ERROR == u32RetVal)
     {
         ZC_Printf("Send Msg1 fail disconnect\n");

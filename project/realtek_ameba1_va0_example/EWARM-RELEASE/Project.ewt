@@ -1000,6 +1000,12 @@
         </group>
         <group>
           <name>tropicssl</name>
+          <file>
+            <name>$PROJ_DIR$\..\..\src\ZC\src\tropicssl\bignum.c</name>
+          </file>
+          <file>
+            <name>$PROJ_DIR$\..\..\src\ZC\src\tropicssl\rsa.c</name>
+          </file>
         </group>
         <group>
           <name>zc</name>

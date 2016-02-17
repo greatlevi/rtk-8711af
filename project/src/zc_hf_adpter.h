@@ -33,7 +33,7 @@ typedef struct
 
 #define HF_MAX_SOCKET_LEN    (1000)
 
-
+#define FLASH_ADDRESS      (0xFF000)
 
 #ifdef __cplusplus
 extern "C" {
@@ -41,7 +41,7 @@ extern "C" {
 void HF_Init(void);
 void HF_WakeUp(void);
 void HF_Sleep(void);
-void HF_ReadDataFromFlash(u8 *pu8Data, u16 u16Len);
+void HF_ReadDataFromFlash(void);
 void HF_WriteDataToFlash(u8 *pu8Data, u16 u16Len);
 #ifdef __cplusplus
 }

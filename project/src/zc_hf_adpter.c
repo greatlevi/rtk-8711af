@@ -23,6 +23,7 @@
 #include "task.h"
 #include "netdb.h" 
 #include "sockets.h"
+#include "flash_api.h"
 
 gtimer_t g_struTimer1;
 
@@ -53,6 +54,7 @@ u32 g_u32BcSleepCount = 800;
 struct sockaddr_in struRemoteAddr;
 
 u16 g_u16TiTimerCount[ZC_TIMER_MAX_NUM];
+flash_t cloud_flash;
 
 
 /*************************************************
@@ -63,9 +65,28 @@ u16 g_u16TiTimerCount[ZC_TIMER_MAX_NUM];
 * Parameter: 
 * History:
 *************************************************/
-void HF_ReadDataFromFlash(u8 *pu8Data, u16 u16Len) 
+void HF_ReadDataFromFlash(void) 
 {
+    u32 u32MagicFlag = 0xFFFFFFFF;
 
+    if (1 == flash_read_word(&cloud_flash, FLASH_ADDRESS, &u32MagicFlag))
+    {
+        if (ZC_MAGIC_FLAG == u32MagicFlag)
+        {   
+        	if (1 != flash_stream_read(&cloud_flash, FLASH_ADDRESS, sizeof(ZC_ConfigDB), (unsigned char *)(&g_struZcConfigDb)))
+            {
+                ZC_Printf("HF_ReadDataFromFlash error2\n\r");
+            }   
+        }
+        else
+        {
+            ZC_Printf("no para, use default\n\r");
+        }
+    }
+    else
+    {
+        ZC_Printf("HF_ReadDataFromFlash error1\n\r");
+    } 
 }
 
 /*************************************************
@@ -78,9 +99,16 @@ void HF_ReadDataFromFlash(u8 *pu8Data, u16 u16Len)
 *************************************************/
 void HF_WriteDataToFlash(u8 *pu8Data, u16 u16Len)
 {
-
+    flash_erase_sector(&cloud_flash, FLASH_ADDRESS);
+    if (1 != flash_stream_write(&cloud_flash, FLASH_ADDRESS, u16Len, pu8Data))
+    {
+        ZC_Printf("flash_stream_write error\n\r");
+    }
+    else
+    {
+        ZC_Printf("flash_stream_write successed\n\r");
+    }
 }
-
 /*************************************************
 * Function: HF_timer_callback
 * Description: 
@@ -225,7 +253,6 @@ u32 HF_SendDataToMoudle(u8 *pu8Data, u16 u16DataLen)
     AC_RecvMessage((ZC_MessageHead *)pu8Data);
     return ZC_RET_OK;
 }
-
 /*************************************************
 * Function: HF_Rest
 * Description: 
@@ -291,7 +318,6 @@ static void HF_CloudRecvfunc(void* arg)
     int tmp=1;    
     s32 s32ret = 0;
 
-    
     while(1) 
     {
         ZC_StartClientListen();
@@ -505,11 +531,7 @@ u32 HF_ConnectToCloud(PTC_Connection *pstruConnection)
     ZC_Printf("connect ok!\n");
     g_struProtocolController.struCloudConnection.u32Socket = fd;
 
-#if 1
     ZC_Rand(g_struProtocolController.RandMsg);
-#endif
-
-
     return ZC_RET_OK;
 }
 /*************************************************
@@ -690,7 +712,7 @@ void HF_Init(void)
     g_u16TcpMss = 1000;
 
     PCT_Init(&g_struHfAdapter);
-
+    HF_ReadDataFromFlash();
     // Initial a periodical timer
     gtimer_init(&g_struTimer1, TIMER0);
     gtimer_start_periodical(&g_struTimer1, 1000000, (void*)Timer_callback, 0);

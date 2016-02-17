@@ -67,7 +67,7 @@ typedef struct
 
 typedef struct 
 {
-    u32 u32Crc;
+    u32 u32MagicFlag;
     ZC_ConnectionInfo struConnection;//100 byte
     ZC_CloudInfo    struCloudInfo; // 70byte
     ZC_SwitchInfo   struSwitchInfo;//120byte
