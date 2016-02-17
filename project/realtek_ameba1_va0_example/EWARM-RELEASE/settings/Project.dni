@@ -1,0 +1,75 @@
+[Jet]
+JetConnSerialNo=64507
+JetConnFoundProbes=
+DisableInterrupts=0
+MultiCoreRunAll=0
+[PlDriver]
+FirstRun=0
+MemConfigValue=D:\工作资料\斐联\sdk-ameba1-v3.4b\project\realtek_ameba1_va0_example\EWARM-RELEASE\..\..\..\component\soc\realtek\8195a\misc\iar_utility\common\8195a.ddf
+[Exceptions]
+StopOnUncaught=_ 0
+StopOnThrow=_ 0
+[Stack]
+FillEnabled=0
+OverflowWarningsEnabled=1
+WarningThreshold=90
+SpWarningsEnabled=1
+WarnLogOnly=1
+UseTrigger=1
+TriggerName=main
+LimitSize=0
+ByteLimit=50
+[SWOManager]
+SamplingDivider=8192
+OverrideClock=0
+CpuClock=1948269568
+SwoClock=4096
+DataLogMode=0
+ItmPortsEnabled=63
+ItmTermIOPorts=1
+ItmLogPorts=0
+ItmLogFile=$PROJ_DIR$\ITM.log
+PowerForcePC=1
+PowerConnectPC=1
+[ArmDriver]
+EnableCache=1
+[DebugChecksum]
+Checksum=1447734392
+[CallStack]
+ShowArgs=0
+[Disassembly]
+MixedMode=1
+[DriverProfiling]
+Enabled=0
+Mode=0
+Graph=0
+Symbiont=0
+Exclusions=
+[SWOTraceWindow]
+ForcedPcSampling=0
+ForcedInterruptLogs=0
+ForcedItmLogs=0
+EventCPI=0
+EventEXC=0
+EventFOLD=0
+EventLSU=0
+EventSLEEP=0
+[CallStackLog]
+Enabled=0
+[Disassemble mode]
+mode=0
+[Breakpoints2]
+Count=0
+[Log file]
+LoggingEnabled=_ 0
+LogFile=_ ""
+Category=_ 0
+[TermIOLog]
+LoggingEnabled=_ 0
+LogFile=_ ""
+[Aliases]
+A0=_ "D:\Projects\svn_release_3.4b\component\common\drivers\wlan\realtek\include\rtw_recv.h" ""
+A1=_ "D:\Projects\svn_release_3.4b\component\os\freertos\freertos_service.h" ""
+A2=_ "vectors.S" ""
+Count=3
+SuppressDialog=0
