@@ -12,6 +12,9 @@
 #include <wifi/wifi_ind.h>
 #include "tcpip.h"
 #include <osdep_service.h>
+#include "hal_platform.h"
+#include "rtl8195a_peri_on.h"
+#include "hal_api.h"
 
 #if CONFIG_EXAMPLE_WLAN_FAST_CONNECT || CONFIG_JD_SMART
 #include "wlan_fast_connect/example_wlan_fast_connect.h"
@@ -127,9 +130,40 @@ uint32_t rtw_join_status;
 #define AP_GW_ADDR3   1  
 #endif
 
+unsigned int g_u32DisconnFlag = 0;
 /******************************************************
  *               Function Definitions
  ******************************************************/
+
+void Ac_DevReset()
+{
+	printf("Please restart Ac !!!\r\n");
+	HAL_WRITE32(SYSTEM_CTRL_BASE,REG_SOC_FUNC_EN, 
+		(HAL_READ32(SYSTEM_CTRL_BASE,REG_SOC_FUNC_EN)&(~BIT27)));
+	sys_reset();
+}
+
+static void Ac_AutoReconnect(void* param)
+{
+	g_u32DisconnFlag = 1;
+
+	printf("Wait wifi driver auto reconnect...");
+	sys_msleep(60000);
+	
+	if(wifi_is_connected_to_ap() == RTW_SUCCESS)	
+    {
+		printf("WiFi auto reconnect successfully!!");
+		goto Exit;	
+	}
+	else
+    {   
+		Ac_DevReset();
+    }
+Exit:
+	g_u32DisconnFlag = 0;
+	vTaskDelete(NULL);	
+}
+
 
 #if CONFIG_WLAN
 //----------------------------------------------------------------------------//
@@ -298,9 +332,18 @@ static void wifi_disconn_hdl( char* buf, int buf_len, int flags, void* userdata)
 	if(join_user_data != NULL)
 		rtw_up_sema(&join_user_data->join_sema);
 	//printf("\r\nWiFi Disconnect. Error flag is %d.\n", error_flag);
-
-    HF_Sleep();
-    HF_BcInit();
+    if (0 == g_u32DisconnFlag)
+    {
+        HF_Sleep();
+        HF_BcInit();
+        /* 起一个任务，监控重连 */
+    	if(xTaskCreate(Ac_AutoReconnect, ((const char*)"reconnect"), 512, NULL, tskIDLE_PRIORITY + 1, NULL) != pdPASS)
+        {   
+            printf("%s xTaskCreate(Ac_AutoReconnect) failed.", __FUNCTION__);
+        }
+        
+    }
+    
 }
 
 #if CONFIG_EXAMPLE_WLAN_FAST_CONNECT || CONFIG_JD_SMART
@@ -1575,7 +1618,7 @@ int wifi_set_autoreconnect(__u8 mode)
 {
     printf("wifi_set_autoreconnect\n\r");
 	p_wlan_autoreconnect_hdl = wifi_autoreconnect_hdl;
-	return wifi_config_autoreconnect(mode, 3, 5);//default retry 2 times(limit is 3), timeout 5 seconds
+	return wifi_config_autoreconnect(mode, 10, 5);//default retry 2 times(limit is 3), timeout 5 seconds
 }
 
 int wifi_get_autoreconnect(__u8 *mode)

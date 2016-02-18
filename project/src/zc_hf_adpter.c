@@ -24,6 +24,7 @@
 #include "netdb.h" 
 #include "sockets.h"
 #include "flash_api.h"
+#include "wifi_constants.h"
 
 gtimer_t g_struTimer1;
 
@@ -55,7 +56,6 @@ struct sockaddr_in struRemoteAddr;
 
 u16 g_u16TiTimerCount[ZC_TIMER_MAX_NUM];
 flash_t cloud_flash;
-
 
 /*************************************************
 * Function: HF_ReadDataFormFlash
@@ -720,11 +720,11 @@ void HF_Init(void)
     g_struUartBuffer.u32Status = MSG_BUFFER_IDLE;
     g_struUartBuffer.u32RecvLen = 0;
 
-	if(xTaskCreate(HF_Cloudfunc, ((const char*)"HF_Cloudfunc"), 512, NULL, tskIDLE_PRIORITY + 2, NULL) != pdPASS)
+	if(xTaskCreate(HF_Cloudfunc, ((const char*)"HF_Cloudfunc"), 512, NULL, tskIDLE_PRIORITY + 1, NULL) != pdPASS)
     {   
 		printf("\n\r%s xTaskCreate(init_thread) failed", __FUNCTION__);
     }
-	if(xTaskCreate(HF_CloudRecvfunc, ((const char*)"HF_CloudRecvfunc"), 512, NULL, tskIDLE_PRIORITY + 2, NULL) != pdPASS)
+	if(xTaskCreate(HF_CloudRecvfunc, ((const char*)"HF_CloudRecvfunc"), 512, NULL, tskIDLE_PRIORITY + 1, NULL) != pdPASS)
     {   
 		printf("\n\r%s xTaskCreate(init_thread) failed", __FUNCTION__);
     }     
