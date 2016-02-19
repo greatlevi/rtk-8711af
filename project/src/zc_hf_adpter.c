@@ -25,6 +25,8 @@
 #include "sockets.h"
 #include "flash_api.h"
 #include "wifi_constants.h"
+#include "rtl8195a.h"
+#include "zc_common.h"
 
 gtimer_t g_struTimer1;
 
@@ -56,6 +58,10 @@ struct sockaddr_in struRemoteAddr;
 
 u16 g_u16TiTimerCount[ZC_TIMER_MAX_NUM];
 flash_t cloud_flash;
+
+u32 newImg2Addr = 0xFFFFFFFF;
+u32 oldImg2Addr = 0xFFFFFFFF;
+
 
 /*************************************************
 * Function: HF_ReadDataFormFlash
@@ -192,6 +198,146 @@ void Timer_callback(void)
     }
 }
 /*************************************************
+* Function: HF_ReadNewImg2Addr
+* Description: 
+* Author: cxy 
+* Returns: 
+* Parameter: 
+* History:
+*************************************************/
+void HF_ReadNewImg2Addr(void)
+{
+	flash_t	flash;
+	u32 NewImg2Addr = 0;	
+	u32 Img2Len = 0;	
+	u32 IMAGE_x = 0, ImgxLen = 0, ImgxAddr = 0;
+    
+	u32 SigImage0,SigImage1;
+	u32 Part1Addr=0xFFFFFFFF, Part2Addr=0xFFFFFFFF, ATSCAddr=0xFFFFFFFF;
+	u32 OldImg2Addr;	
+    
+	u32 ota_addr = 436*1024;  //0x80000 0x6d000
+    ZC_Printf("HF_ReadNewImg2Addr\n\r");
+	// The upgraded image2 pointer must 4K aligned and should not overlap with Default Image2
+	flash_read_word(&flash, IMAGE_2_BASE, &Img2Len);
+	IMAGE_x = IMAGE_2_BASE + Img2Len + 0x10;
+	flash_read_word(&flash, IMAGE_x, &ImgxLen);
+	flash_read_word(&flash, IMAGE_x+4, &ImgxAddr);
+	if(ImgxAddr == 0x30000000)
+    {
+		printf("\n\r[%s] IMAGE_3 0x%x Img3Len 0x%x", __FUNCTION__, IMAGE_x, ImgxLen);
+	}
+    else
+    {
+		printf("\n\r[%s] no IMAGE_3", __FUNCTION__);
+		// no image3
+		IMAGE_x = IMAGE_2_BASE;
+		ImgxLen = Img2Len;
+	}
+	if((ota_addr > IMAGE_x) && ((ota_addr < (IMAGE_x + ImgxLen)))
+        || (ota_addr < IMAGE_x)
+        || ((ota_addr & 0xfff) != 0)
+        || (ota_addr == ~0x0))
+    {
+		printf("\n\r[%s] illegal ota addr 0x%x", __FUNCTION__, ota_addr);
+		newImg2Addr = 0xFFFFFFFF;
+		return;
+	}
+    else
+    {
+		write_ota_addr_to_system_data( &flash, ota_addr);
+    }
+	//Get upgraded image 2 addr from offset
+	flash_read_word(&flash, FLASH_SYSTEM_DATA_ADDR, &NewImg2Addr);
+	if((NewImg2Addr > IMAGE_x) && ((NewImg2Addr < (IMAGE_x+ImgxLen)))
+        || (NewImg2Addr < IMAGE_x)
+        || ((NewImg2Addr & 0xfff) != 0)
+        || (NewImg2Addr == ~0x0))
+    {
+		printf("\n\r[%s] Invalid OTA Address 0x%x", __FUNCTION__, NewImg2Addr);
+		newImg2Addr = 0xFFFFFFFF;
+		return;
+	}
+
+
+	flash_read_word(&flash, 0x18, &Part1Addr);
+	Part1Addr = (Part1Addr & 0xFFFF) * 1024;	// first partition
+	Part2Addr = NewImg2Addr;
+	
+	// read Part1/Part2 signature
+	flash_read_word(&flash, Part1Addr+8, &SigImage0);
+	flash_read_word(&flash, Part1Addr+12, &SigImage1);
+	printf("\n\r[%s] Part1 Sig %x", __FUNCTION__, SigImage0);
+	if(SigImage0==0x30303030 && SigImage1==0x30303030)
+		ATSCAddr = Part1Addr;		// ATSC signature
+	else if(SigImage0==0x35393138 && SigImage1==0x31313738)	
+		OldImg2Addr = Part1Addr;	// newer version, change to older version
+	else
+		NewImg2Addr = Part1Addr;	// update to older version	
+	
+	flash_read_word(&flash, Part2Addr+8, &SigImage0);
+	flash_read_word(&flash, Part2Addr+12, &SigImage1);
+	printf("\n\r[%s] Part2 Sig %x", __FUNCTION__, SigImage0);
+	if(SigImage0==0x30303030 && SigImage1==0x30303030)
+		ATSCAddr = Part2Addr;		// ATSC signature
+	else if(SigImage0==0x35393138 && SigImage1==0x31313738)
+		OldImg2Addr = Part2Addr;
+	else
+		NewImg2Addr = Part2Addr;
+	
+	// update ATSC clear partitin first
+	if(ATSCAddr != ~0x0){
+		OldImg2Addr = NewImg2Addr;
+		NewImg2Addr = ATSCAddr;
+	}
+	oldImg2Addr = OldImg2Addr;
+	printf("\n\r[%s] New %x, Old %x", __FUNCTION__, NewImg2Addr, OldImg2Addr);	
+
+	newImg2Addr = NewImg2Addr;
+    printf("oldImg2Addr is %d, newImg2Addr is %d\n\r", oldImg2Addr, newImg2Addr);
+}
+/*************************************************
+* Function: HF_CheckImg2Addr
+* Description: 
+* Author: cxy 
+* Returns: 
+* Parameter: 
+* History:
+*************************************************/
+u32 HF_CheckImg2Addr(u32 u32TotalLen)
+{
+	flash_t flash;
+    s32 fileBlkSize;
+    u32 u32i;
+
+	if (newImg2Addr == 0xFFFFFFFF)
+    {
+		printf("\n\r[%s] illegal ota addr 0x%x", __FUNCTION__, newImg2Addr);
+		return ZC_RET_ERROR;			
+	}		
+	if (oldImg2Addr != 0xFFFFFFFF && newImg2Addr < oldImg2Addr)
+    {
+		if (u32TotalLen > (oldImg2Addr - newImg2Addr))   // firmware size too large
+        {   
+			printf("\n\r[%s] Part1 size < OTA size", __FUNCTION__);
+			return ZC_RET_ERROR;
+		}
+	}
+    else if(u32TotalLen > (FLASH_ADDRESS - newImg2Addr))
+    {
+		printf("\n\r[%s] Part2 size < OTA size", __FUNCTION__);
+		return ZC_RET_ERROR;
+	}
+	//erase sector
+	fileBlkSize = ((u32TotalLen - 1) / 4096) + 1;
+	for(u32i = 0; u32i < fileBlkSize; u32i++)
+    {
+		flash_erase_sector(&flash, newImg2Addr + u32i * 4096);	
+	}
+    return ZC_RET_OK;
+}
+
+/*************************************************
 * Function: HF_FirmwareUpdateFinish
 * Description: 
 * Author: cxy 
@@ -201,18 +347,53 @@ void Timer_callback(void)
 *************************************************/
 u32 HF_FirmwareUpdateFinish(u32 u32TotalLen)
 {
-#if 0
-    int retval;
-    retval = hfupdate_complete(HFUPDATE_SW, u32TotalLen);
-    if (HF_SUCCESS == retval)
-    {
-        return ZC_RET_OK;
-    }
-    else
-    {
-        return ZC_RET_ERROR;    
-    }
+    int i = 0;
+    int ret = -1 ;
+    flash_t flash;
+    u32 NewImg2Addr = newImg2Addr;
+    u32 OldImg2Addr = oldImg2Addr;
+#if CONFIG_CUSTOM_SIGNATURE
+    char custom_sig[32] = "Customer Signature-modelxxx";
+    u32 read_custom_sig[8];
 #endif
+#if CONFIG_CUSTOM_SIGNATURE
+        for(i = 0; i < 8; i ++)
+        {
+            flash_read_word(&flash, NewImg2Addr + 0x28 + i *4, read_custom_sig + i);
+        }
+        printf("\n\r[%s] read_custom_sig %s", __FUNCTION__ , (char*)read_custom_sig);
+#endif
+        // compare checksum with received checksum
+        //if(!memcmp(&checksum,file_info,sizeof(checksum))
+#if CONFIG_CUSTOM_SIGNATURE
+        if(!strcmp((char*)read_custom_sig,custom_sig))
+#endif
+        {
+            //Set signature in New Image 2 addr + 8 and + 12
+            u32 sig_readback0,sig_readback1;
+            flash_write_word(&flash,NewImg2Addr + 8, 0x35393138);
+            flash_write_word(&flash,NewImg2Addr + 12, 0x31313738);
+            flash_read_word(&flash, NewImg2Addr + 8, &sig_readback0);
+            flash_read_word(&flash, NewImg2Addr + 12, &sig_readback1);
+            printf("\n\r[%s] signature %x,%x", __FUNCTION__ , sig_readback0, sig_readback1);
+#if SWAP_UPDATE
+            if(OldImg2Addr != ~0x0)
+            {
+                flash_write_word(&flash,OldImg2Addr + 8, 0x35393130);
+                flash_write_word(&flash,OldImg2Addr + 12, 0x31313738);
+                flash_read_word(&flash, OldImg2Addr + 8, &sig_readback0);
+                flash_read_word(&flash, OldImg2Addr + 12, &sig_readback1);
+                printf("\n\r[%s] old signature %x,%x", __FUNCTION__ , sig_readback0, sig_readback1);
+            }
+#endif			
+            printf("\n\r[%s] Update OTA success!", __FUNCTION__);
+            ret = 0;
+        }
+    if(!ret)
+    {
+        printf("\n\r[%s] Ready to reboot", __FUNCTION__);   
+        ota_platform_reset(); 
+    }
     return 0;
 }
 /*************************************************
@@ -225,19 +406,16 @@ u32 HF_FirmwareUpdateFinish(u32 u32TotalLen)
 *************************************************/
 u32 HF_FirmwareUpdate(u8 *pu8FileData, u32 u32Offset, u32 u32DataLen)
 {
-#if 0
-    int retval;
-    if (0 == u32Offset)
+    int ret;
+    flash_t flash;
+    //ZC_Printf("HF_FirmwareUpdate: newImg2Addr is %d, oldImg2Addr is %d\n\r", newImg2Addr, oldImg2Addr);
+    ret = flash_stream_write(&flash, newImg2Addr + u32Offset, u32DataLen, pu8FileData);
+
+    if(1 != ret)
     {
-        hfupdate_start(HFUPDATE_SW);
-    }
-    
-    retval = hfupdate_write_file(HFUPDATE_SW, u32Offset, (char *)pu8FileData, u32DataLen); 
-    if (retval < 0)
-    {
+        ZC_Printf("HF_FirmwareUpdate :write flash fail\r\n");
         return ZC_RET_ERROR;
     }
-#endif
     return ZC_RET_OK;
 }
 /*************************************************
@@ -455,8 +633,14 @@ static void HF_CloudRecvfunc(void* arg)
 *************************************************/
 void HF_GetMac(u8 *pu8Mac)
 {
-    u8 mac[18] = {0};
+    u8 mac[32] = {0};
+    u8 macTmp[12] = {0};
 	wifi_get_mac_address((char*)mac);
+    sscanf(mac,
+            "%2x:%2x:%2x:%2x:%2x:%2x",
+            macTmp,macTmp+1,macTmp+2,macTmp+3,macTmp+4,macTmp+5);
+    
+    ZC_HexToString(mac, macTmp, ZC_SERVER_MAC_LEN / 2);
     memcpy(pu8Mac, mac, ZC_SERVER_MAC_LEN);
 }
 
@@ -715,7 +899,7 @@ void HF_Init(void)
     gtimer_init(&g_struTimer1, TIMER0);
     gtimer_start_periodical(&g_struTimer1, 1000000, (void*)Timer_callback, 0);
     
-    printf("MT Init\n");
+    printf("RTK Init\n");
 
     g_struUartBuffer.u32Status = MSG_BUFFER_IDLE;
     g_struUartBuffer.u32RecvLen = 0;

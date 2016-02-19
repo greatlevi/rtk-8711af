@@ -34,6 +34,7 @@ typedef struct
 #define HF_MAX_SOCKET_LEN    (1000)
 
 #define FLASH_ADDRESS      (0xFF000)
+#define IMAGE_2_BASE	     0x0000B000
 
 #ifdef __cplusplus
 extern "C" {

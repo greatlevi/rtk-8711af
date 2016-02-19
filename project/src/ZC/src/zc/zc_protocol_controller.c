@@ -640,18 +640,35 @@ void PCT_HandleOtaBeginMsg(PTC_ProtocolCon *pstruContoller, MSG_Buffer *pstruBuf
 * Parameter: 
 * History:
 *************************************************/
+extern void HF_ReadNewImg2Addr(void);
+extern u32 HF_CheckImg2Addr(u32 u32TotalLen);
+
 void PCT_ModuleOtaFileBeginMsg(PTC_ProtocolCon *pstruContoller, u8 *pu8Msg)
 {
     ZC_OtaFileBeginReq *pstruOta;
-    ZC_Printf("Ota File Begin\n");
-    
+    u32 u32Ret;
+    ZC_Printf("Ota File Begin!!!\n");
+    ZC_Printf("Ota File Begin..\n");
+    ZC_Printf("Ota File Begin....\n");
     pstruOta = (ZC_OtaFileBeginReq *)(pu8Msg);
     
     pstruContoller->struOtaInfo.u32RecvOffset = 0;
     pstruContoller->struOtaInfo.u32TotalLen = ZC_HTONL(pstruOta->u32FileTotalLen);
     pstruContoller->struOtaInfo.u8Crc[0] = pstruOta->u8TotalFileCrc[0];
-    pstruContoller->struOtaInfo.u8Crc[1] = pstruOta->u8TotalFileCrc[1];    
-    PCT_SendNotifyMsg(ZC_CODE_ACK);
+    pstruContoller->struOtaInfo.u8Crc[1] = pstruOta->u8TotalFileCrc[1]; 
+    ZC_Printf("Ota File Begin1\n");
+    HF_ReadNewImg2Addr();
+    ZC_Printf("Ota File Begin2\n");
+    u32Ret = HF_CheckImg2Addr(pstruContoller->struOtaInfo.u32TotalLen);
+    if (ZC_RET_OK == u32Ret)
+    {
+        ZC_Printf("Ota File Begin3\n");
+        PCT_SendNotifyMsg(ZC_CODE_ACK);
+    }
+    else
+    {
+        ZC_Printf("Ota File Begin4\n");
+    }
     return;
 }
 /*************************************************
@@ -735,8 +752,6 @@ void PCT_ModuleOtaFileEndMsg(PTC_ProtocolCon *pstruContoller, u8 *pu8Msg)
     {
         PCT_SendNotifyMsg(ZC_CODE_ACK);
     }
-    
-
 }
 
 /*************************************************
@@ -751,9 +766,9 @@ void PCT_HandleOtaFileBeginMsg(PTC_ProtocolCon *pstruContoller, MSG_Buffer *pstr
 {
     ZC_MessageHead *pstruMsg;
     ZC_OtaFileBeginReq *pstruOta;
+    u32 u32Ret;
     ZC_Printf("Ota File Begin\n");
     
-
     pstruMsg = (ZC_MessageHead*)pstruBuffer->u8MsgBuffer;
     pstruOta = (ZC_OtaFileBeginReq *)(pstruMsg + 1);
     
@@ -761,8 +776,18 @@ void PCT_HandleOtaFileBeginMsg(PTC_ProtocolCon *pstruContoller, MSG_Buffer *pstr
     pstruContoller->struOtaInfo.u32TotalLen = ZC_HTONL(pstruOta->u32FileTotalLen);
     pstruContoller->struOtaInfo.u8Crc[0] = pstruOta->u8TotalFileCrc[0];
     pstruContoller->struOtaInfo.u8Crc[1] = pstruOta->u8TotalFileCrc[1];    
-    PCT_SendAckToCloud(pstruMsg->MsgId);
+    HF_ReadNewImg2Addr();
+    u32Ret = HF_CheckImg2Addr(pstruContoller->struOtaInfo.u32TotalLen);
+    if (ZC_RET_OK == u32Ret)
+    {
+        PCT_SendNotifyMsg(ZC_CODE_ACK);
+    }
+    else
+    {
+        ZC_Printf("Ota File Begin4\n");
+    }
 
+    PCT_SendAckToCloud(pstruMsg->MsgId);
 
     return;
 }
