@@ -355,7 +355,7 @@ void ota_platform_reset(void)
 	                              (1 << 2));                                  // SYSRESETREQ
 	while(1) osDelay(1000);
 }
-#if WRITE_OTA_ADDR
+//#if WRITE_OTA_ADDR
 int write_ota_addr_to_system_data(flash_t *flash, uint32_t ota_addr)
 {
 	uint32_t data, i = 0;
@@ -386,7 +386,7 @@ int write_ota_addr_to_system_data(flash_t *flash, uint32_t ota_addr)
 	}
 	return 0;
 }
-#endif
+//#endif
 static void update_ota_local_task(void *param)
 {
 	int server_socket;

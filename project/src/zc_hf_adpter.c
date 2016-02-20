@@ -62,7 +62,7 @@ flash_t cloud_flash;
 u32 newImg2Addr = 0xFFFFFFFF;
 u32 oldImg2Addr = 0xFFFFFFFF;
 
-
+extern int write_ota_addr_to_system_data(flash_t *flash, u32 ota_addr);
 /*************************************************
 * Function: HF_ReadDataFormFlash
 * Description: 
@@ -245,6 +245,7 @@ void HF_ReadNewImg2Addr(void)
 	}
     else
     {
+        printf("write_ota_addr_to_system_data\n\r");
 		write_ota_addr_to_system_data( &flash, ota_addr);
     }
 	//Get upgraded image 2 addr from offset
@@ -259,11 +260,11 @@ void HF_ReadNewImg2Addr(void)
 		return;
 	}
 
-
-	flash_read_word(&flash, 0x18, &Part1Addr);
+	flash_read_word(&flash, 0x18, &Part1Addr); // Part1Addr-default image2 address
 	Part1Addr = (Part1Addr & 0xFFFF) * 1024;	// first partition
 	Part2Addr = NewImg2Addr;
-	
+	//printf("1.Part1Addr is 0x%08x,Part2Addr is 0x%08x\n\r", Part1Addr, Part2Addr);
+    //printf("1.OldImg2Addr is 0x%08x,NewImg2Addr is 0x%08x\n\r", OldImg2Addr, NewImg2Addr);
 	// read Part1/Part2 signature
 	flash_read_word(&flash, Part1Addr+8, &SigImage0);
 	flash_read_word(&flash, Part1Addr+12, &SigImage1);
@@ -274,7 +275,8 @@ void HF_ReadNewImg2Addr(void)
 		OldImg2Addr = Part1Addr;	// newer version, change to older version
 	else
 		NewImg2Addr = Part1Addr;	// update to older version	
-	
+	//printf("2.Part1Addr is 0x%08x,Part2Addr is 0x%08x\n\r", Part1Addr, Part2Addr);
+    //printf("2.OldImg2Addr is 0x%08x,NewImg2Addr is 0x%08x\n\r", OldImg2Addr, NewImg2Addr);
 	flash_read_word(&flash, Part2Addr+8, &SigImage0);
 	flash_read_word(&flash, Part2Addr+12, &SigImage1);
 	printf("\n\r[%s] Part2 Sig %x", __FUNCTION__, SigImage0);
@@ -284,7 +286,8 @@ void HF_ReadNewImg2Addr(void)
 		OldImg2Addr = Part2Addr;
 	else
 		NewImg2Addr = Part2Addr;
-	
+	//printf("3.Part1Addr is 0x%08x,Part2Addr is 0x%08x\n\r", Part1Addr, Part2Addr);
+    //printf("3.OldImg2Addr is 0x%08x,NewImg2Addr is 0x%08x\n\r", OldImg2Addr, NewImg2Addr);	
 	// update ATSC clear partitin first
 	if(ATSCAddr != ~0x0){
 		OldImg2Addr = NewImg2Addr;
@@ -352,43 +355,40 @@ u32 HF_FirmwareUpdateFinish(u32 u32TotalLen)
     flash_t flash;
     u32 NewImg2Addr = newImg2Addr;
     u32 OldImg2Addr = oldImg2Addr;
-#if CONFIG_CUSTOM_SIGNATURE
+
     char custom_sig[32] = "Customer Signature-modelxxx";
     u32 read_custom_sig[8];
-#endif
-#if CONFIG_CUSTOM_SIGNATURE
-        for(i = 0; i < 8; i ++)
+
+    for(i = 0; i < 8; i ++)
+    {
+        flash_read_word(&flash, NewImg2Addr + 0x28 + i *4, read_custom_sig + i);
+    }
+    printf("\n\r[%s] read_custom_sig %s", __FUNCTION__ , (char*)read_custom_sig);
+
+    // compare checksum with received checksum
+    //if(!memcmp(&checksum,file_info,sizeof(checksum))
+    if(!strcmp((char*)read_custom_sig,custom_sig))
+    {
+        //Set signature in New Image 2 addr + 8 and + 12
+        u32 sig_readback0,sig_readback1;
+        flash_write_word(&flash,NewImg2Addr + 8, 0x35393138);
+        flash_write_word(&flash,NewImg2Addr + 12, 0x31313738);
+        flash_read_word(&flash, NewImg2Addr + 8, &sig_readback0);
+        flash_read_word(&flash, NewImg2Addr + 12, &sig_readback1);
+        printf("\n\r[%s] signature %x,%x", __FUNCTION__ , sig_readback0, sig_readback1);
+
+        if(OldImg2Addr != ~0x0)
         {
-            flash_read_word(&flash, NewImg2Addr + 0x28 + i *4, read_custom_sig + i);
+            flash_write_word(&flash,OldImg2Addr + 8, 0x35393130);
+            flash_write_word(&flash,OldImg2Addr + 12, 0x31313738);
+            flash_read_word(&flash, OldImg2Addr + 8, &sig_readback0);
+            flash_read_word(&flash, OldImg2Addr + 12, &sig_readback1);
+            printf("\n\r[%s] old signature %x,%x", __FUNCTION__ , sig_readback0, sig_readback1);
         }
-        printf("\n\r[%s] read_custom_sig %s", __FUNCTION__ , (char*)read_custom_sig);
-#endif
-        // compare checksum with received checksum
-        //if(!memcmp(&checksum,file_info,sizeof(checksum))
-#if CONFIG_CUSTOM_SIGNATURE
-        if(!strcmp((char*)read_custom_sig,custom_sig))
-#endif
-        {
-            //Set signature in New Image 2 addr + 8 and + 12
-            u32 sig_readback0,sig_readback1;
-            flash_write_word(&flash,NewImg2Addr + 8, 0x35393138);
-            flash_write_word(&flash,NewImg2Addr + 12, 0x31313738);
-            flash_read_word(&flash, NewImg2Addr + 8, &sig_readback0);
-            flash_read_word(&flash, NewImg2Addr + 12, &sig_readback1);
-            printf("\n\r[%s] signature %x,%x", __FUNCTION__ , sig_readback0, sig_readback1);
-#if SWAP_UPDATE
-            if(OldImg2Addr != ~0x0)
-            {
-                flash_write_word(&flash,OldImg2Addr + 8, 0x35393130);
-                flash_write_word(&flash,OldImg2Addr + 12, 0x31313738);
-                flash_read_word(&flash, OldImg2Addr + 8, &sig_readback0);
-                flash_read_word(&flash, OldImg2Addr + 12, &sig_readback1);
-                printf("\n\r[%s] old signature %x,%x", __FUNCTION__ , sig_readback0, sig_readback1);
-            }
-#endif			
-            printf("\n\r[%s] Update OTA success!", __FUNCTION__);
-            ret = 0;
-        }
+	
+        printf("\n\r[%s] Update OTA success!", __FUNCTION__);
+        ret = 0;
+    }
     if(!ret)
     {
         printf("\n\r[%s] Ready to reboot", __FUNCTION__);   
@@ -654,7 +654,10 @@ void HF_GetMac(u8 *pu8Mac)
 *************************************************/
 void HF_Reboot(void)
 {
-    sys_reset();
+	printf("Please restart Ac !!!\r\n");
+	HAL_WRITE32(SYSTEM_CTRL_BASE,REG_SOC_FUNC_EN, 
+		(HAL_READ32(SYSTEM_CTRL_BASE,REG_SOC_FUNC_EN)&(~BIT27)));
+	sys_reset();
 }
 /*************************************************
 * Function: HF_ConnectToCloud

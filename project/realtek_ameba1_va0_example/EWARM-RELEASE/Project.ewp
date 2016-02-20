@@ -173,7 +173,7 @@
         <option>
           <name>CCDefines</name>
           <state>CONFIG_PLATFORM_8195A</state>
-          <state>ZC_MODULE_VERSION=0</state>
+          <state>ZC_MODULE_VERSION=16</state>
           <state>ZC_MODULE_TYPE=9</state>
         </option>
         <option>
