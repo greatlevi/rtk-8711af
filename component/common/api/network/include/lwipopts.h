@@ -136,7 +136,7 @@ a lot of data that needs to be copied, this should be set high. */
 #define LWIP_IGMP                   1
 #define LWIP_RAND()                 rand()
 
-#define LWIP_UART_ADAPTER                   0
+#define LWIP_UART_ADAPTER                   1   //0
 
 #if LWIP_UART_ADAPTER
 #undef  LWIP_IGMP                   			
@@ -157,7 +157,7 @@ a lot of data that needs to be copied, this should be set high. */
 #undef TCP_WND                
 #define TCP_WND                                       (4*TCP_MSS)
 
-#define TCP_KEEPIDLE_DEFAULT			10000UL
+#define TCP_KEEPIDLE_DEFAULT			30000UL//10000UL
 #define TCP_KEEPINTVL_DEFAULT			1000UL
 #define TCP_KEEPCNT_DEFAULT			10U
 #endif

@@ -972,6 +972,7 @@ void fATWE(void *arg){
 }
 #endif
 
+extern void HF_Rest(void);
 #if (CONFIG_INCLUDE_SIMPLE_CONFIG)
 void fATWQ(void *arg){
 	int argc=0;
@@ -981,7 +982,8 @@ void fATWQ(void *arg){
         if(arg){
           argv[argc++] = arg;
         }
-        cmd_simple_config(argc, argv);
+        HF_Rest();
+        //cmd_simple_config(argc, argv);
 }
 #endif
 

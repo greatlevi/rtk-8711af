@@ -67,7 +67,7 @@ typedef struct
 
 typedef struct 
 {
-    u32 u32MagicFlag;
+    u32 u32Crc;
     ZC_ConnectionInfo struConnection;//100 byte
     ZC_CloudInfo    struCloudInfo; // 70byte
     ZC_SwitchInfo   struSwitchInfo;//120byte
@@ -82,6 +82,7 @@ extern ZC_RegisterInfo g_struRegisterInfo;
 extern "C" {
 #endif
 
+void ZC_ConfigInitDefault(void);
 void ZC_ConfigInitPara(void);
 void ZC_ConfigPara(u8 *pu8Data);
 void ZC_StoreRegisterInfo(u8 *pu8Data,u8 u8RegisterFlag);

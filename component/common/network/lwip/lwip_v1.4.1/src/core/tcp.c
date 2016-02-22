@@ -894,6 +894,7 @@ tcp_slowtmr_start:
     /* Check if KEEPALIVE should be sent */
     if(ip_get_option(pcb, SOF_KEEPALIVE) &&
        ((pcb->state == ESTABLISHED) ||
+        (pcb->state == FIN_WAIT_1) ||  //modified by realtek
         (pcb->state == CLOSE_WAIT))) {
       if((u32_t)(tcp_ticks - pcb->tmr) >
          (pcb->keep_idle + TCP_KEEP_DUR(pcb)) / TCP_SLOW_INTERVAL)

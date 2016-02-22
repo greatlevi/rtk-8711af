@@ -71,30 +71,13 @@ extern int write_ota_addr_to_system_data(flash_t *flash, u32 ota_addr);
 * Parameter: 
 * History:
 *************************************************/
-void HF_ReadDataFromFlash(void) 
+void HF_ReadDataFromFlash(u8 *pu8Data, u16 u16Len) 
 {
-    u32 u32MagicFlag = 0xFFFFFFFF;
-
-    if (1 == flash_read_word(&cloud_flash, FLASH_ADDRESS, &u32MagicFlag))
+    if (1 != flash_stream_read(&cloud_flash, FLASH_ADDRESS, u16Len, pu8Data))
     {
-        if (ZC_MAGIC_FLAG == u32MagicFlag)
-        {   
-        	if (1 != flash_stream_read(&cloud_flash, FLASH_ADDRESS, sizeof(ZC_ConfigDB), (unsigned char *)(&g_struZcConfigDb)))
-            {
-                ZC_Printf("HF_ReadDataFromFlash error2\n\r");
-            }   
-        }
-        else
-        {
-            ZC_Printf("no para, use default\n\r");
-        }
-    }
-    else
-    {
-        ZC_Printf("HF_ReadDataFromFlash error1\n\r");
+        ZC_Printf("HF_ReadDataFromFlash error\n\r");
     } 
 }
-
 /*************************************************
 * Function: HF_WriteDataToFlash
 * Description: 
@@ -443,6 +426,11 @@ void HF_Rest(void)
 {   
 	int argc=0;
 	char *argv[2] = {0};
+    g_struZcConfigDb.struSwitchInfo.u32ServerAddrConfig = 0;
+    g_struZcConfigDb.struDeviceInfo.u32UnBcFlag = 0xFFFFFFFF;
+    g_struZcConfigDb.struSwitchInfo.u32SecSwitch = 1;
+    memcpy(g_struZcConfigDb.struCloudInfo.u8CloudAddr, "test.ablecloud.cn", ZC_CLOUD_ADDR_MAX_LEN);
+    ZC_ConfigUnBind(ZC_MAGIC_FLAG);
     cmd_simple_config(argc, argv);
 }
 /*************************************************
@@ -524,7 +512,6 @@ static void HF_CloudRecvfunc(void* arg)
             u32MaxFd = u32MaxFd > g_struProtocolController.struCloudConnection.u32Socket ? u32MaxFd : g_struProtocolController.struCloudConnection.u32Socket;
             u32ActiveFlag = 1;
         }
-
 
         for (u32Index = 0; u32Index < ZC_MAX_CLIENT_NUM; u32Index++)
         {
@@ -654,7 +641,7 @@ void HF_GetMac(u8 *pu8Mac)
 *************************************************/
 void HF_Reboot(void)
 {
-	printf("Please restart Ac !!!\r\n");
+	printf("Restart Ac !!!\r\n");
 	HAL_WRITE32(SYSTEM_CTRL_BASE,REG_SOC_FUNC_EN, 
 		(HAL_READ32(SYSTEM_CTRL_BASE,REG_SOC_FUNC_EN)&(~BIT27)));
 	sys_reset();
@@ -674,6 +661,7 @@ u32 HF_ConnectToCloud(PTC_Connection *pstruConnection)
     struct ip_addr struIp;
     int retval;
     u16 port;
+    int keepalive_enable = 1;
     memset((char*)&addr, 0, sizeof(addr));
     if (1 == g_struZcConfigDb.struSwitchInfo.u32ServerAddrConfig)
     {
@@ -699,7 +687,14 @@ u32 HF_ConnectToCloud(PTC_Connection *pstruConnection)
     fd = socket(AF_INET, SOCK_STREAM, 0);
 
     if(fd < 0)
+    {
         return ZC_RET_ERROR;
+    }
+    if (ZC_CLOUD_PORT != port)
+    {
+        setsockopt(fd, SOL_SOCKET, SO_KEEPALIVE,
+               (const char *) &keepalive_enable, sizeof( keepalive_enable ));   
+    }
 
     if (connect(fd, (struct sockaddr *)&addr, sizeof(addr))< 0)
     {
@@ -807,7 +802,7 @@ void HF_BcInit()
     struRemoteAddr.sin_port = htons(ZC_MOUDLE_BROADCAST_PORT); 
     struRemoteAddr.sin_addr.s_addr=inet_addr("255.255.255.255"); 
     g_pu8RemoteAddr = (u8*)&struRemoteAddr;
-    g_u32BcSleepCount = 250000;
+    g_u32BcSleepCount = 2.5 * 250000;
 
     return;
 }
@@ -897,7 +892,6 @@ void HF_Init(void)
     g_u16TcpMss = 1000;
 
     PCT_Init(&g_struHfAdapter);
-    HF_ReadDataFromFlash();
     // Initial a periodical timer
     gtimer_init(&g_struTimer1, TIMER0);
     gtimer_start_periodical(&g_struTimer1, 1000000, (void*)Timer_callback, 0);

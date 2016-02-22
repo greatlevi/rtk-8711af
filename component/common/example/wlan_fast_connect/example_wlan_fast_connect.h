@@ -12,7 +12,7 @@
 #include <autoconf.h>
 
 #define IW_PASSPHRASE_MAX_SIZE 64
-#define FAST_RECONNECT_DATA (0x80000 - 0x1000)
+#define FAST_RECONNECT_DATA  (0x100000 - 0x4000)//(0x80000 - 0x1000)
 #define NDIS_802_11_LENGTH_SSID         32
 #define A_SHA_DIGEST_LEN		20
 
