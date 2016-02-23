@@ -62,6 +62,8 @@ flash_t cloud_flash;
 u32 newImg2Addr = 0xFFFFFFFF;
 u32 oldImg2Addr = 0xFFFFFFFF;
 
+u32 g_u32SmartConfigFlag = 0;
+
 extern int write_ota_addr_to_system_data(flash_t *flash, u32 ota_addr);
 /*************************************************
 * Function: HF_ReadDataFormFlash
@@ -426,11 +428,13 @@ void HF_Rest(void)
 {   
 	int argc=0;
 	char *argv[2] = {0};
+    g_u32SmartConfigFlag = 1;
     g_struZcConfigDb.struSwitchInfo.u32ServerAddrConfig = 0;
-    g_struZcConfigDb.struDeviceInfo.u32UnBcFlag = 0xFFFFFFFF;
+    //g_struZcConfigDb.struDeviceInfo.u32UnBcFlag = 0xFFFFFFFF;
     g_struZcConfigDb.struSwitchInfo.u32SecSwitch = 1;
     memcpy(g_struZcConfigDb.struCloudInfo.u8CloudAddr, "test.ablecloud.cn", ZC_CLOUD_ADDR_MAX_LEN);
     ZC_ConfigUnBind(ZC_MAGIC_FLAG);
+    sys_msleep(100);
     cmd_simple_config(argc, argv);
 }
 /*************************************************
@@ -695,7 +699,7 @@ u32 HF_ConnectToCloud(PTC_Connection *pstruConnection)
         setsockopt(fd, SOL_SOCKET, SO_KEEPALIVE,
                (const char *) &keepalive_enable, sizeof( keepalive_enable ));   
     }
-
+    ZC_Printf("Start connecting...\n\r");
     if (connect(fd, (struct sockaddr *)&addr, sizeof(addr))< 0)
     {
         close(fd);
@@ -890,6 +894,7 @@ void HF_Init(void)
     g_struHfAdapter.pfunFree = free;
     g_struHfAdapter.pfunPrintf = HF_Printf;
     g_u16TcpMss = 1000;
+    g_u32SmartConfigFlag = 0;
 
     PCT_Init(&g_struHfAdapter);
     // Initial a periodical timer
@@ -923,6 +928,7 @@ void HF_Init(void)
 void HF_WakeUp()
 {
     ZC_Printf("HF_WakeUp\n\r");
+    g_u32SmartConfigFlag = 0;
     PCT_WakeUp();
 }
 /*************************************************

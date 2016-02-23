@@ -131,6 +131,11 @@ uint32_t rtw_join_status;
 #endif
 
 unsigned int g_u32DisconnFlag = 0;
+
+extern void HF_Sleep();
+extern void HF_BcInit();
+extern unsigned int g_u32SmartConfigFlag;
+
 /******************************************************
  *               Function Definitions
  ******************************************************/
@@ -293,8 +298,7 @@ static void wifi_handshake_done_hdl( char* buf, int buf_len, int flags, void* us
 	if(join_user_data != NULL)
 		rtw_up_sema(&join_user_data->join_sema);
 }
-extern void HF_Sleep();
-extern void HF_BcInit();
+
 
 static void wifi_disconn_hdl( char* buf, int buf_len, int flags, void* userdata)
 {
@@ -336,10 +340,13 @@ static void wifi_disconn_hdl( char* buf, int buf_len, int flags, void* userdata)
     {
         HF_Sleep();
         HF_BcInit();
-        /* 起一个任务，监控重连 */
-    	if(xTaskCreate(Ac_AutoReconnect, ((const char*)"reconnect"), 512, NULL, tskIDLE_PRIORITY + 1, NULL) != pdPASS)
-        {   
-            printf("%s xTaskCreate(Ac_AutoReconnect) failed.", __FUNCTION__);
+        if (0 == g_u32SmartConfigFlag)
+        {
+            /* 起一个任务，监控重连 */
+        	if(xTaskCreate(Ac_AutoReconnect, ((const char*)"reconnect"), 512, NULL, tskIDLE_PRIORITY + 1, NULL) != pdPASS)
+            {   
+                printf("%s xTaskCreate(Ac_AutoReconnect) failed.", __FUNCTION__);
+            }
         }
         
     }
