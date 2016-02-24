@@ -22,8 +22,8 @@ ByteLimit=50
 [SWOManager]
 SamplingDivider=8192
 OverrideClock=0
-CpuClock=808989984
-SwoClock=116868636
+CpuClock=85739144
+SwoClock=85654208
 DataLogMode=0
 ItmPortsEnabled=63
 ItmTermIOPorts=1

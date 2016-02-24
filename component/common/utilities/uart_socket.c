@@ -4,6 +4,8 @@
 #include "uart_socket.h"
 
 #define UART_SOCKET_USE_DMA_TX 1
+
+extern void AC_UartProcess(u8* inBuf, u32 datalen);
 /***********************************************************************
  *                                Macros                               *
  ***********************************************************************/
@@ -141,8 +143,8 @@ Exit:
 
 uart_socket_t* uart_open(uart_set_str *puartpara)
 {
-	PinName uart_tx = PA_7;//PA_4; //PA_7
-	PinName uart_rx = PA_6;//PA_0; //PA_6
+	PinName uart_tx = PA_4; //PA_7
+	PinName uart_rx = PA_0; //PA_6
 	uart_socket_t *u;
 
 	u = (uart_socket_t *)RtlZmalloc(sizeof(uart_socket_t));
@@ -304,7 +306,7 @@ void uart_socket_example(void *param)
 	int uart_fd;
 	uart_socket_t *uart_socket = NULL;
 
-	uartset.BaudRate = 9600;
+	uartset.BaudRate = 115200;//9600;
 	uartset.number = 8;
 	uartset.StopBits = 0;
 	uartset.FlowControl = 0;
@@ -325,7 +327,7 @@ void uart_socket_example(void *param)
 		tv.tv_sec = 0;
 		tv.tv_usec = 20000;
 		if(count++ == 50){
-			uart_write(uart_socket, tx_data, sizeof(tx_data));
+			//uart_write(uart_socket, tx_data, sizeof(tx_data));
 			//uart_print_data("TX:", tx_data, sizeof(tx_data));
 			count = 0;
 		}
@@ -341,10 +343,12 @@ void uart_socket_example(void *param)
 					uart_print_data("RX:", rxbuf, read_len);
 					if(rtl_strncmp(rxbuf, "close", 5) == 0)
 						break;
+                    AC_UartProcess(rxbuf, read_len);
 				}
 			}
 			//else for other sockets
 		}
+        sys_msleep(100);
 	}
 	uart_printf("Exit uart socket example!\n");
 	uart_close(uart_socket);
@@ -354,7 +358,7 @@ Exit:
 
 void uart_socket()
 {
-#define 	UART_SOCKET_STACK_SIZE		512
+#define 	UART_SOCKET_STACK_SIZE		1024//512
 #define 	UART_SOCKET_PRIORITY		1
 	if(xTaskCreate(uart_socket_example, "uart_socket", UART_SOCKET_STACK_SIZE, NULL, UART_SOCKET_PRIORITY, NULL) != pdPASS)
 		uart_printf("%s xTaskCreate failed", __FUNCTION__);

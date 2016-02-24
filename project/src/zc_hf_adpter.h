@@ -45,6 +45,8 @@ void HF_Sleep(void);
 void HF_ReadDataFromFlash(u8 *pu8Data, u16 u16Len);
 void HF_WriteDataToFlash(u8 *pu8Data, u16 u16Len);
 void HF_Reboot(void);
+void HF_BcInit(void);
+
 
 #ifdef __cplusplus
 }

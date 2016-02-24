@@ -85,7 +85,7 @@ struct netif xnetif[NET_IF_NUM]; /* network interface structure */
   * @param  None
   * @retval None
   */
-
+extern unsigned int g_u32GloablIp;
 extern int error_flag;
 extern void HF_WakeUp();
 void LwIP_Init(void)
@@ -182,6 +182,7 @@ uint8_t LwIP_DHCP(uint8_t idx, uint8_t dhcp_state)
 
 			if (IPaddress!=0) 
 			{
+			    g_u32GloablIp = htonl(IPaddress);
 				DHCP_state = DHCP_ADDRESS_ASSIGNED;	
 
 				wifi_reg_event_handler(WIFI_EVENT_BEACON_AFTER_DHCP, wifi_rx_beacon_hdl, NULL);

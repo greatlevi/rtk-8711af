@@ -235,6 +235,7 @@ void ZC_ConfigUnBind(u32 u32UnBindFlag)
     g_struZcConfigDb.struDeviceInfo.u32UnBindFlag = u32UnBindFlag; 
     g_struZcConfigDb.u32Crc = crc16_ccitt(((u8 *)&g_struZcConfigDb) + 4, sizeof(g_struZcConfigDb) - 4);    
     g_struProtocolController.pstruMoudleFun->pfunWriteFlash((u8*)&g_struZcConfigDb, sizeof(ZC_ConfigDB));
+    sys_msleep(100);
 }
 
 /*************************************************
@@ -247,10 +248,12 @@ void ZC_ConfigUnBind(u32 u32UnBindFlag)
 *************************************************/
 void ZC_ConfigReset()
 {
+    ZC_Printf("ZC_ConfigReset\n\r");
     g_struZcConfigDb.struSwitchInfo.u32ServerAddrConfig = 0;            
     g_struZcConfigDb.struDeviceInfo.u32UnBcFlag = 0xFFFFFFFF;
     g_struZcConfigDb.u32Crc = crc16_ccitt(((u8 *)&g_struZcConfigDb) + 4, sizeof(g_struZcConfigDb) - 4);    
     g_struProtocolController.pstruMoudleFun->pfunWriteFlash((u8 *)&g_struZcConfigDb, sizeof(ZC_ConfigDB));
+    sys_msleep(100);
     g_struProtocolController.pstruMoudleFun->pfunRest();
 }
 

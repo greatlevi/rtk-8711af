@@ -1055,8 +1055,11 @@ void PCT_HandleEvent(PTC_ProtocolCon *pstruContoller)
 *************************************************/
 void PCT_Run()
 {
+    //static u32 count = 0;
     PTC_ProtocolCon *pstruContoller = &g_struProtocolController;
-    //ZC_Printf("state is %d\n\r", pstruContoller->u8MainState);
+
+    //if ((count++) % 500000 == 0)
+    //    ZC_Printf("state is %d\n", pstruContoller->u8MainState);
     switch(pstruContoller->u8MainState)
     {
         case PCT_STATE_SLEEP:

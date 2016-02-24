@@ -46,5 +46,7 @@ uart_socket_t* uart_open(uart_set_str *puartpara);
 int uart_close(uart_socket_t *u);
 int uart_read(uart_socket_t *u, void *read_buf, size_t size);
 int uart_write(uart_socket_t *u, void *pbuf, size_t size);
+void uart_socket();
+
 
 #endif //__UART_SOCKET_H_

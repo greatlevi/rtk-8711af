@@ -392,6 +392,7 @@ static void update_ota_local_task(void *param)
 	int server_socket;
 	struct sockaddr_in server_addr;
 	unsigned char *buf;
+	uint32_t Part1Addr=0xFFFFFFFF, Part2Addr=0xFFFFFFFF, ATSCAddr=0xFFFFFFFF;
         union { uint32_t u; unsigned char c[4]; } file_checksum;
 	int read_bytes = 0, size = 0, i = 0;
 	update_cfg_local_t *cfg = (update_cfg_local_t *)param;
@@ -488,7 +489,7 @@ static void update_ota_local_task(void *param)
 	
 #if SWAP_UPDATE
 	uint32_t SigImage0,SigImage1;
-	uint32_t Part1Addr=0xFFFFFFFF, Part2Addr=0xFFFFFFFF, ATSCAddr=0xFFFFFFFF;
+	//uint32_t Part1Addr=0xFFFFFFFF, Part2Addr=0xFFFFFFFF, ATSCAddr=0xFFFFFFFF;
 	uint32_t OldImg2Addr;
 	flash_read_word(&flash, 0x18, &Part1Addr);
 	Part1Addr = (Part1Addr&0xFFFF)*1024;	// first partition

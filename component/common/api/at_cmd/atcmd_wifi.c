@@ -982,8 +982,8 @@ void fATWQ(void *arg){
         if(arg){
           argv[argc++] = arg;
         }
-        HF_Rest();
-        //cmd_simple_config(argc, argv);
+        //HF_Rest();
+        cmd_simple_config(argc, argv);
 }
 #endif
 

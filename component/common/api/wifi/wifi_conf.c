@@ -134,7 +134,7 @@ unsigned int g_u32DisconnFlag = 0;
 
 extern void HF_Sleep();
 extern void HF_BcInit();
-extern unsigned int g_u32SmartConfigFlag;
+//extern unsigned int g_u32SmartConfigFlag;
 
 /******************************************************
  *               Function Definitions
@@ -340,6 +340,15 @@ static void wifi_disconn_hdl( char* buf, int buf_len, int flags, void* userdata)
     {
         HF_Sleep();
         HF_BcInit();
+        /* 起一个任务，监控重连 */
+
+    	if(xTaskCreate(Ac_AutoReconnect, ((const char*)"reconnect"), 512, NULL, tskIDLE_PRIORITY + 1, NULL) != pdPASS)
+        {   
+            printf("%s xTaskCreate(Ac_AutoReconnect) failed.", __FUNCTION__);
+        }
+
+#if 0
+
         if (0 == g_u32SmartConfigFlag)
         {
             /* 起一个任务，监控重连 */
@@ -348,6 +357,7 @@ static void wifi_disconn_hdl( char* buf, int buf_len, int flags, void* userdata)
                 printf("%s xTaskCreate(Ac_AutoReconnect) failed.", __FUNCTION__);
             }
         }
+#endif
         
     }
     
@@ -1611,6 +1621,9 @@ void wifi_autoreconnect_hdl(rtw_security_t security_type,
 	param.password = password;
 	param.password_len = password_len;
 	param.key_id = key_id;
+
+    HF_Sleep();
+    HF_BcInit();
 	xTaskCreate(wifi_autoreconnect_thread, (const char *)"wifi_autoreconnect", 512, &param, tskIDLE_PRIORITY + 1, NULL);
 }
 

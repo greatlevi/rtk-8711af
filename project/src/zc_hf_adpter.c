@@ -27,6 +27,8 @@
 #include "wifi_constants.h"
 #include "rtl8195a.h"
 #include "zc_common.h"
+#include "uart_socket.h"
+
 
 gtimer_t g_struTimer1;
 
@@ -62,7 +64,7 @@ flash_t cloud_flash;
 u32 newImg2Addr = 0xFFFFFFFF;
 u32 oldImg2Addr = 0xFFFFFFFF;
 
-u32 g_u32SmartConfigFlag = 0;
+//u32 g_u32SmartConfigFlag = 0;
 
 extern int write_ota_addr_to_system_data(flash_t *flash, u32 ota_addr);
 /*************************************************
@@ -424,18 +426,13 @@ u32 HF_SendDataToMoudle(u8 *pu8Data, u16 u16DataLen)
 * Parameter: 
 * History:
 *************************************************/
+extern void fATWQ(void *arg);
 void HF_Rest(void)
-{   
-	int argc=0;
-	char *argv[2] = {0};
-    g_u32SmartConfigFlag = 1;
-    g_struZcConfigDb.struSwitchInfo.u32ServerAddrConfig = 0;
-    //g_struZcConfigDb.struDeviceInfo.u32UnBcFlag = 0xFFFFFFFF;
-    g_struZcConfigDb.struSwitchInfo.u32SecSwitch = 1;
-    memcpy(g_struZcConfigDb.struCloudInfo.u8CloudAddr, "test.ablecloud.cn", ZC_CLOUD_ADDR_MAX_LEN);
-    ZC_ConfigUnBind(ZC_MAGIC_FLAG);
-    sys_msleep(100);
-    cmd_simple_config(argc, argv);
+{ 
+    void *p = NULL;
+    HF_Sleep();
+    HF_BcInit();
+    fATWQ(p);
 }
 /*************************************************
 * Function: HF_SendTcpData
@@ -490,6 +487,7 @@ static void HF_CloudRecvfunc(void* arg)
 
     while(1) 
     {
+        //ZC_Printf("HF_CloudRecvfunc\n");
         ZC_StartClientListen();
 
         u32ActiveFlag = 0;
@@ -526,7 +524,6 @@ static void HF_CloudRecvfunc(void* arg)
                 u32ActiveFlag = 1;            
             }
         }
-
 
         if (0 == u32ActiveFlag)
         {
@@ -611,7 +608,7 @@ static void HF_CloudRecvfunc(void* arg)
                 ZC_SendClientQueryReq(g_u8BcSendBuffer, (u16)s32RecvLen);
             } 
         }
-        
+        sys_msleep(100);
     } 
 }
 /*************************************************
@@ -782,7 +779,7 @@ void HF_Printf(const char *pu8format, ...)
 * Parameter: 
 * History:
 *************************************************/
-void HF_BcInit()
+void HF_BcInit(void)
 {
     int tmp=1;
     struct sockaddr_in addr; 
@@ -852,6 +849,7 @@ static void HF_Cloudfunc(void* arg)
             MSG_SendDataToCloud((u8*)&g_struProtocolController.struCloudConnection);
         }
         ZC_SendBc();
+        sys_msleep(100);
     } 
 }
 
@@ -894,7 +892,7 @@ void HF_Init(void)
     g_struHfAdapter.pfunFree = free;
     g_struHfAdapter.pfunPrintf = HF_Printf;
     g_u16TcpMss = 1000;
-    g_u32SmartConfigFlag = 0;
+    //g_u32SmartConfigFlag = 0;
 
     PCT_Init(&g_struHfAdapter);
     // Initial a periodical timer
@@ -902,6 +900,8 @@ void HF_Init(void)
     gtimer_start_periodical(&g_struTimer1, 1000000, (void*)Timer_callback, 0);
     
     printf("RTK Init\n");
+
+    uart_socket();
 
     g_struUartBuffer.u32Status = MSG_BUFFER_IDLE;
     g_struUartBuffer.u32RecvLen = 0;
@@ -928,7 +928,7 @@ void HF_Init(void)
 void HF_WakeUp()
 {
     ZC_Printf("HF_WakeUp\n\r");
-    g_u32SmartConfigFlag = 0;
+    //g_u32SmartConfigFlag = 0;
     PCT_WakeUp();
 }
 /*************************************************
