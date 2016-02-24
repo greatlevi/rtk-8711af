@@ -63,6 +63,7 @@ flash_t cloud_flash;
 
 u32 newImg2Addr = 0xFFFFFFFF;
 u32 oldImg2Addr = 0xFFFFFFFF;
+extern uart_socket_t *g_uart_socket;
 
 //u32 g_u32SmartConfigFlag = 0;
 
@@ -803,7 +804,8 @@ void HF_BcInit(void)
     struRemoteAddr.sin_port = htons(ZC_MOUDLE_BROADCAST_PORT); 
     struRemoteAddr.sin_addr.s_addr=inet_addr("255.255.255.255"); 
     g_pu8RemoteAddr = (u8*)&struRemoteAddr;
-    g_u32BcSleepCount = 2.5 * 250000;
+    //g_u32BcSleepCount = 2.5 * 250000;
+    g_u32BcSleepCount = 10;
 
     return;
 }
@@ -982,7 +984,7 @@ void HF_Sleep()
 *************************************************/
 void AC_UartSend(u8* inBuf, u32 datalen)
 {
-     //hfuart_send(HFUART0,(char*)inBuf,datalen,1000); 
+    uart_write(uart_socket, inBuf, datalen);
 }
 /******************************* FILE END ***********************************/
 

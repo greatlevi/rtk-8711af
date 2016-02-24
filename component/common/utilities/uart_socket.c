@@ -5,6 +5,8 @@
 
 #define UART_SOCKET_USE_DMA_TX 1
 
+uart_socket_t *g_uart_socket = NULL;
+
 extern void AC_UartProcess(u8* inBuf, u32 datalen);
 /***********************************************************************
  *                                Macros                               *
@@ -304,7 +306,7 @@ void uart_socket_example(void *param)
 	int ret = 0;
 	char rxbuf[512];
 	int uart_fd;
-	uart_socket_t *uart_socket = NULL;
+	//uart_socket_t *uart_socket = NULL;
 
 	uartset.BaudRate = 115200;//9600;
 	uartset.number = 8;
@@ -313,12 +315,12 @@ void uart_socket_example(void *param)
 	uartset.parity = 0;
 	strcpy(uartset.UartName, "uart0");
 
-	uart_socket = uart_open(&uartset);
-	if(uart_socket == NULL){
+	g_uart_socket = uart_open(&uartset);
+	if(g_uart_socket == NULL){
 		uart_printf("Init uart socket failed!\n");
 		goto Exit;
 	}
-	uart_fd = uart_socket->fd;
+	uart_fd = g_uart_socket->fd;
 	uart_printf("\nOpen uart socket: %d\n", uart_fd);
 	while(1)
 	{
@@ -337,7 +339,7 @@ void uart_socket_example(void *param)
 		{
 			if(FD_ISSET(uart_fd, &readfds))
 			{
-				read_len = uart_read(uart_socket, rxbuf, sizeof(rxbuf));
+				read_len = uart_read(g_uart_socket, rxbuf, sizeof(rxbuf));
 				if(read_len > 0)
 				{
 					uart_print_data("RX:", rxbuf, read_len);
@@ -351,7 +353,7 @@ void uart_socket_example(void *param)
         sys_msleep(100);
 	}
 	uart_printf("Exit uart socket example!\n");
-	uart_close(uart_socket);
+	uart_close(g_uart_socket);
 Exit:
 	vTaskDelete(NULL);
 }
