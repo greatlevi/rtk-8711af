@@ -22,8 +22,8 @@ ByteLimit=50
 [SWOManager]
 SamplingDivider=8192
 OverrideClock=0
-CpuClock=3276850
-SwoClock=3407904
+CpuClock=5523800
+SwoClock=606347298
 DataLogMode=0
 ItmPortsEnabled=63
 ItmTermIOPorts=1
@@ -56,10 +56,6 @@ EventLSU=0
 EventSLEEP=0
 [CallStackLog]
 Enabled=0
-[Disassemble mode]
-mode=0
-[Breakpoints2]
-Count=0
 [Log file]
 LoggingEnabled=_ 0
 LogFile=_ ""
@@ -67,6 +63,10 @@ Category=_ 0
 [TermIOLog]
 LoggingEnabled=_ 0
 LogFile=_ ""
+[Disassemble mode]
+mode=0
+[Breakpoints2]
+Count=0
 [Aliases]
 A0=_ "D:\Projects\svn_release_3.4b\component\common\drivers\wlan\realtek\include\rtw_recv.h" ""
 A1=_ "D:\Projects\svn_release_3.4b\component\os\freertos\freertos_service.h" ""
