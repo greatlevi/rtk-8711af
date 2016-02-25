@@ -1,6 +1,6 @@
 ###############################################################################
 #
-# IAR ELF Linker V7.30.1.7746/W32 for ARM                 24/Feb/2016  19:36:58
+# IAR ELF Linker V7.30.1.7746/W32 for ARM                 25/Feb/2016  10:55:29
 # Copyright 2007-2014 IAR Systems AB.
 #
 #    Output file  =  
@@ -856,7 +856,7 @@ __SystemLibrary = DLib
       .heap                        0x1ffff4e4      0x4  <Block>
         .heap.stdlib      zero     0x1ffff4e4      0x1  ram_libgloss_retarget.o [7]
     part 2:
-      IMAGE1_DBG                   0x1fff0000   0x24b4  <Block>
+      IMAGE1_DBG                   0x1fff0000   0x24c0  <Block>
         .ram.start.table           0x1fff0000     0x14  <Block>
           .start.ram.data.a
                           const    0x1fff0000      0x4  startup.o [6]
@@ -881,7 +881,7 @@ __SystemLibrary = DLib
           .hal.ram.data   const    0x1fff14c8      0xc  hal_sdr_controller.o [2]
           .hal.ram.data   zero     0x1fff14d4     0x10  startup.o [6]
         .ram_image1.bss            0x1fff14e4      0x0  <Block>
-        .ram_image1.text           0x1fff14e4    0xfd0  <Block>
+        .ram_image1.text           0x1fff14e4    0xfdc  <Block>
           Veneer          ro code  0x1fff14e4      0x8  - Linker created -
           Veneer          ro code  0x1fff14ec      0x8  - Linker created -
           Veneer          ro code  0x1fff14f4      0x8  - Linker created -
@@ -907,7 +907,7 @@ __SystemLibrary = DLib
           Veneer          ro code  0x1fff1594      0x8  - Linker created -
           .hal.ram.text   ro code  0x1fff159c    0x700  startup.o [6]
           Veneer          ro code  0x1fff1c9c      0x8  - Linker created -
-          .hal.sdrc.text  ro code  0x1fff1ca4    0x810  hal_sdr_controller.o [2]
+          .hal.sdrc.text  ro code  0x1fff1ca4    0x81c  hal_sdr_controller.o [2]
                                  - 0x1ffff4e8   0xf4e8
 
 
@@ -1251,7 +1251,7 @@ Entry                      Address    Size  Type      Object
                         0x1fff14e4           --   Gb  - Linker created -
 .ram_image1.text$$Base  0x1fff14e4           --   Gb  - Linker created -
 .ram_image1.text$$Limit
-                        0x1fff24b4           --   Gb  - Linker created -
+                        0x1fff24c0           --   Gb  - Linker created -
 .ram_image2.text$$Base  0x10006038           --   Gb  - Linker created -
 .ram_image2.text$$Limit
                         0x1004fcd8           --   Gb  - Linker created -
@@ -1412,7 +1412,7 @@ DisableDMA8195a         0x1003c189     0xa  Code  Gb  lxbus_ops.o [8]
 DisableInterrupt8195a   0x1003c193     0xe  Code  Gb  lxbus_ops.o [8]
 DoIQK_8195A             0x1004557b    0x1e  Code  Gb  HalPhyRf_8195A.o [8]
 DoReserved              0x10031817     0x4  Code  Gb  rtw_mlme_ext.o [8]
-DramInit                0x1fff1d43   0x276  Code  Gb  hal_sdr_controller.o [2]
+DramInit                0x1fff1d43   0x282  Code  Gb  hal_sdr_controller.o [2]
 DumpForOneBytes         0x0000e259   0x1be  Code  Gb  rom.o [11]
 DurationScaleAndPeriodOP
                         0x1003e039    0x2e  Code  Gb  hal_soc_ps_monitor.o [2]
@@ -1943,7 +1943,7 @@ I2CTXGDMAISRHandle      0x0000b435    0x8c  Code  Wk  rom.o [11]
 IMAGE1$$Base            0x10000bc8           --   Gb  - Linker created -
 IMAGE1$$Limit           0x10004294           --   Gb  - Linker created -
 IMAGE1_DBG$$Base        0x1fff0000           --   Gb  - Linker created -
-IMAGE1_DBG$$Limit       0x1fff24b4           --   Gb  - Linker created -
+IMAGE1_DBG$$Limit       0x1fff24c0           --   Gb  - Linker created -
 IMAGE2$$Base            0x10006000           --   Gb  - Linker created -
 IMAGE2$$Limit           0x10052ca8           --   Gb  - Linker created -
 INCLargeInteger         0x1003e837    0x24  Code  Lc  rtw_psk.o [8]
@@ -2011,7 +2011,7 @@ MSG_SendDataToCloud     0x1000dfd9    0x3e  Code  Gb  zc_message_queue.o [2]
 MediaConnection         0x1004a569     0xc  Code  Gb  rtl8195a_pmu_cmd.o [8]
 MediaDisconnection      0x1004a575     0xa  Code  Gb  rtl8195a_pmu_cmd.o [8]
 MemManage_Handler       0x00000121          Code  Gb  rom.o [11]
-MemTest                 0x1fff2287    0x4c  Code  Gb  hal_sdr_controller.o [2]
+MemTest                 0x1fff2293    0x4c  Code  Gb  hal_sdr_controller.o [2]
 Message_ReplayCounter_OC2LI
                         0x1003e7b5    0x30  Code  Lc  rtw_psk.o [8]
 Message_SmallerEqualReplayCounter
@@ -2426,14 +2426,14 @@ SalAdcEnableState       0x100557ad     0x1  Data  Gb  hal_adc.o [2]
 SalAdcInitialDatKeep    0x100557b0    0x28  Data  Gb  hal_adc.o [2]
 SalAdcInitialFlag       0x100557ac     0x1  Data  Gb  hal_adc.o [2]
 Save_DM_Func_Flag       0x100365b1     0x6  Code  Gb  rtw_wlan_util.o [8]
-SdrCalibration          0x1fff1fb9   0x270  Code  Gb  hal_sdr_controller.o [2]
+SdrCalibration          0x1fff1fc5   0x270  Code  Gb  hal_sdr_controller.o [2]
 SdrControllerInit       0x1fff1cbf    0x84  Code  Gb  hal_sdr_controller.o [2]
 SdrCtrlInit             0x1fff1ca5    0x1a  Code  Gb  hal_sdr_controller.o [2]
 SdrDramDev              0x1fff001c    0x10  Data  Gb  hal_sdr_controller.o [2]
 SdrDramInfo             0x1fff007c    0x14  Data  Gb  hal_sdr_controller.o [2]
 SdrDramModeReg          0x1fff002c    0x1c  Data  Gb  hal_sdr_controller.o [2]
 SdrDramTiming           0x1fff0048    0x34  Data  Gb  hal_sdr_controller.o [2]
-Sdr_Rand2               0x1fff224b    0x3c  Code  Gb  hal_sdr_controller.o [2]
+Sdr_Rand2               0x1fff2257    0x3c  Code  Gb  hal_sdr_controller.o [2]
 SelectChannel           0x10036625    0x2a  Code  Gb  rtw_wlan_util.o [8]
 SendEAPOL               0x1003f071   0x4b6  Code  Gb  rtw_psk.o [8]
 SerialRxDoneCallBack    0x1001f983    0x1c  Code  Lc  serial_api.o [2]

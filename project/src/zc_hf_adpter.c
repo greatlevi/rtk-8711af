@@ -984,7 +984,7 @@ void HF_Sleep()
 *************************************************/
 void AC_UartSend(u8* inBuf, u32 datalen)
 {
-    uart_write(uart_socket, inBuf, datalen);
+    uart_write(g_uart_socket, inBuf, datalen);
 }
 /******************************* FILE END ***********************************/
 
