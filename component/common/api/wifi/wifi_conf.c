@@ -140,7 +140,7 @@ extern void HF_BcInit();
  *               Function Definitions
  ******************************************************/
 
-void Ac_DevReset()
+void Ac_DevReset(void)
 {
 	printf("Please restart Ac !!!\r\n");
 	HAL_WRITE32(SYSTEM_CTRL_BASE,REG_SOC_FUNC_EN, 
@@ -157,7 +157,7 @@ static void Ac_AutoReconnect(void* param)
 	
 	if(wifi_is_connected_to_ap() == RTW_SUCCESS)	
     {
-		printf("WiFi auto reconnect successfully!!");
+		//printf("WiFi auto reconnect successfully!!");
 		goto Exit;	
 	}
 	else

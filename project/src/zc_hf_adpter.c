@@ -100,7 +100,7 @@ void HF_WriteDataToFlash(u8 *pu8Data, u16 u16Len)
     }
     else
     {
-        ZC_Printf("flash_stream_write successed\n\r");
+        //ZC_Printf("flash_stream_write successed\n\r");
     }
 }
 /*************************************************

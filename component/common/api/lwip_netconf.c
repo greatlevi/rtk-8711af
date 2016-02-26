@@ -134,6 +134,7 @@ void LwIP_Init(void)
 		netif_set_up(&xnetif[idx]); 
 }
 
+extern void Ac_DevReset(void);
 /**
   * @brief  LwIP_DHCP_Process_Handle
   * @param  None
@@ -223,6 +224,9 @@ uint8_t LwIP_DHCP(uint8_t idx, uint8_t dhcp_state)
 					printf("\n\rDHCP timeout");
 					printf("\n\rStatic IP address : %d.%d.%d.%d", iptab[3], iptab[2], iptab[1], iptab[0]);
  					error_flag = RTW_DHCP_FAIL;
+
+                    /* ¸´Î» */
+                    Ac_DevReset();
 					return DHCP_TIMEOUT;
 				}else
 				{

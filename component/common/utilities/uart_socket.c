@@ -7,7 +7,7 @@
 
 uart_socket_t *g_uart_socket = NULL;
 
-extern void AC_UartProcess(u8* inBuf, u32 datalen);
+extern void AC_UartRecv(u8 *pu8Data, u32 u32DataLen);
 /***********************************************************************
  *                                Macros                               *
  ***********************************************************************/
@@ -345,7 +345,7 @@ void uart_socket_example(void *param)
 					uart_print_data("RX:", rxbuf, read_len);
 					if(rtl_strncmp(rxbuf, "close", 5) == 0)
 						break;
-                    AC_UartProcess(rxbuf, read_len);
+                    AC_UartRecv(rxbuf, read_len);
 				}
 			}
 			//else for other sockets
