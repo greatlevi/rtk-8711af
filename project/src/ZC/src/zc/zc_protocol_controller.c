@@ -956,6 +956,46 @@ void PCT_ResetNetWork(PTC_ProtocolCon *pstruContoller, MSG_Buffer *pstruBuffer)
     return;
 }
 
+#define MSG_SERVER_CLIENT_SET_LED_ONOFF_REQ  (68)
+
+typedef struct tag_STRU_LED_STATUS
+{		
+    u8	     u8LedOnOff ; // 0:关，1：开，2：获取当前开关状态
+    u8	     u8Pad[3];		 
+}STRU_LED_STATUS;
+
+void PCT_TurnOnOffLight(PTC_ProtocolCon *pstruContoller, MSG_Buffer *pstruBuffer)
+{
+    ZC_MessageHead *pstruMsg;
+    STRU_LED_STATUS *pstruLed;
+    u16 u16Len;
+    u32 u32Value;
+    ZC_SecHead struSechead;
+    u8 u8Payload[4] = {1, 0, 0, 0};
+    ZC_Printf("PCT_TurnOnOffLight\n");
+
+    pstruMsg = (ZC_MessageHead*)pstruBuffer->u8MsgBuffer;
+    pstruLed = (STRU_LED_STATUS *)(pstruMsg + 1);
+    switch (pstruLed->u8LedOnOff)
+    {
+        case 0:
+        case 1:
+            u32Value = ((pstruLed->u8LedOnOff == 0) ? 1 : 0);
+            //GPIO_OUTPUT_SET(GPIO_ID_PIN(4), u32Value);
+            break;
+        default:
+            ZC_Printf("u8LedOnOff is %d\n", pstruLed->u8LedOnOff);
+            return;
+    }
+    /* 给app回响应 */
+    PCT_SendEmptyMsg(pstruMsg->MsgId, ZC_SEC_ALG_AES);
+    EVENT_BuildMsg(102, pstruMsg->MsgId, g_u8MsgBuildBuffer, &u16Len, u8Payload, 4);
+    struSechead.u8SecType = ZC_SEC_ALG_AES;
+    struSechead.u16TotalMsg = ZC_HTONS(u16Len);
+    (void)PCT_SendMsgToCloud(&struSechead, g_u8MsgBuildBuffer);
+    return;
+}
+
 /*************************************************
 * Function: PCT_HandleEvent
 * Description: 
